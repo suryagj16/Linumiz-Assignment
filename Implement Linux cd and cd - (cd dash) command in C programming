@@ -1,0 +1,40 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <string.h>
+#define PATH_MAX 4096
+void change_directory(const char *path, char *prev_dir) {
+    char current_dir[PATH_MAX];
+    if (getcwd(current_dir, sizeof(current_dir)) == NULL) {
+        perror("getcwd");
+        exit(EXIT_FAILURE);
+    }
+    if (chdir(path) != 0) {
+        perror("chdir");
+    } else {
+        strcpy(prev_dir, current_dir);
+    }
+}
+int main(int argc, char *argv[]) {
+    static char prev_dir[PATH_MAX];
+    if (getcwd(prev_dir, sizeof(prev_dir)) == NULL) {
+        perror("getcwd");
+        return EXIT_FAILURE;
+    }
+    if (argc != 2) {
+        fprintf(stderr, "Usage: %s [directory|-]\n", argv[0]);
+        return EXIT_FAILURE;
+    }
+    if (strcmp(argv[1], "-") == 0) {
+        change_directory(prev_dir, prev_dir);
+    } else {
+        change_directory(argv[1], prev_dir);
+    }
+    char new_dir[PATH_MAX];
+    if (getcwd(new_dir, sizeof(new_dir)) != NULL) {
+        printf("Current directory: %s\n", new_dir);
+    } else {
+        perror("getcwd");
+    }
+    return EXIT_SUCCESS;
+}
